@@ -1,0 +1,102 @@
+.openflash-banner {
+    position: fixed;
+    top: -100px;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4%;
+    z-index: 2147483647;
+    transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, sans-serif;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 768px) {
+    .openflash-banner {
+        height: 70px;
+        padding: 0 5%;
+    }
+}
+
+.openflash-banner.show {
+    top: 0;
+}
+
+.openflash-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.openflash-logo {
+    width: 24px;
+    height: 24px;
+    fill: #FFD700;
+}
+
+.openflash-banner-text {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+@media (min-width: 768px) {
+    .openflash-banner-text {
+        font-size: 16px;
+    }
+}
+
+.openflash-banner-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.openflash-btn-add {
+    background: #FFD700;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.openflash-btn-add:hover {
+    background: #ffe135;
+    transform: translateY(-1px);
+}
+
+.openflash-btn-dismiss {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.openflash-btn-dismiss:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.openflash-success {
+    color: #4BB543;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

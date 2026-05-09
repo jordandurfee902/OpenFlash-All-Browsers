@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.zip
+*.crx
+
+# IDEs and Tools
+.agents/
+.vscode/
+.DS_Store
+*.log
+
+# Firebase/Debug
+firebase-debug.log
+.firebase/
+
+# Misc
+*.pem
+googleOAuth.txt
+scratch/

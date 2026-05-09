@@ -1,0 +1,60 @@
+{
+  "manifest_version": 3,
+  "name": "OpenFlash",
+  "version": "1.0",
+  "description": "Flashcards made easy. Extract from Quizlet and review offline.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.quizlet.com/*",
+    "https://*.knowt.com/*",
+    "https://knowt.com/*",
+    "https://knowt-user-attachments.s3.amazonaws.com/*",
+    "https://www.google.com/recaptcha/*",
+    "https://www.gstatic.com/recaptcha/*",
+    "https://firebaseappcheck.googleapis.com/*"
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "options_page": "index.html",
+  "background": {
+    "page": "background.html",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.quizlet.com/*",
+        "*://quizlet.com/*",
+        "*://*.knowt.com/*",
+        "*://knowt.com/*"
+      ],
+      "js": [
+        "scripts/content.js"
+      ],
+      "css": [
+        "styles/banner.css"
+      ]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "openflash-app-v1@mozilla.org",
+      "strict_min_version": "109.0"
+    }
+  }
+}

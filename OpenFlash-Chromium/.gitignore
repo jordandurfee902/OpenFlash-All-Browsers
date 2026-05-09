@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+
+# Browser & OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
+
+# Distribution
+*.zip
+*.crx
+*.xpi
+
+# Firefox compatibility manifest (keeps root clean if primarily using Chrome manifest)
+# manifest_firefox.json
+
+# Local agent specific data (if any)
+.agents/scratch/
+.agents

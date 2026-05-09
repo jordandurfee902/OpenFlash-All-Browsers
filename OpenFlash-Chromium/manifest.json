@@ -1,0 +1,67 @@
+{
+  "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAscZeoDT5+xforB+nK85VWG+H6Uz3mgYGbiXcwjdXaCvXfGKlDS4FL1WEn5rgsig3ng8Z/3Wgl9KXuGTsi9RXKMNT9wkGH+mZmUFUyrBHQbzouQPVRoEPbYAdtwSZDFODpVmCEygaKNzwcZvd03vGZNNLsJlQPjMLUlEeYOAO6O8MjkzLbXvwlIBSGQtx0/FJzF6oG/6/SF/UgOkh6mg5dv9Oz+ewxoYzlKjsDjgihr7lK4IzNn9URqwrGLtRI/w+5SYHwbf7cpaEqG1kh75Hwk8y5ZX3OIXEYj2N7IulSaOdhCxcyFY3jtWVesQZuAnbH+o+0cy5d5Bf7TfHsqXH6wIDAQAB",
+  "name": "OpenFlash",
+  "version": "1.0",
+  "description": "Flashcards made easy. Extract from Quizlet and review offline.",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://*.quizlet.com/*",
+    "https://*.knowt.com/*",
+    "https://knowt.com/*",
+    "https://knowt-user-attachments.s3.amazonaws.com/*",
+    "https://www.google.com/recaptcha/*",
+    "https://www.gstatic.com/recaptcha/*",
+    "https://firebaseappcheck.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "637353478320-pla6m2kn0lkuqgogmm19eu2dut5q7j80.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "options_page": "index.html",
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.quizlet.com/*",
+        "*://quizlet.com/*",
+        "*://*.knowt.com/*",
+        "*://knowt.com/*"
+      ],
+      "js": [
+        "scripts/content.js"
+      ],
+      "css": [
+        "styles/banner.css"
+      ]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "openflash@example.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

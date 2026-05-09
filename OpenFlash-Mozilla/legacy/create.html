@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>openFlash | Create Set</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD700'%3E%3Cpath d='M13 10V3L4 14H11V21L20 10H13Z' /%3E%3C/svg%3E">
+    <link rel="stylesheet" href="create.css">
+</head>
+
+<body class="dark">
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <button class="sidebar-btn primary active" title="Create Set">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+            </button>
+            <a href="index.html" class="sidebar-btn" title="Library">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM10 9h8v2h-8zm0 3h4v2h-4zm0-6h8v2h-8z" />
+                </svg>
+            </a>
+        </div>
+        <button id="themeToggle" class="sidebar-btn" title="Toggle Theme">
+            <svg class="sun-icon hidden" viewBox="0 0 24 24">
+                <path
+                    d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.37c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z" />
+            </svg>
+            <svg class="moon-icon" viewBox="0 0 24 24">
+                <path
+                    d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" />
+            </svg>
+        </button>
+    </aside>
+
+    <div class="app-content">
+        <nav class="glass-nav">
+            <div class="logo-area">
+                <svg class="logo" viewBox="0 0 24 24">
+                    <path d="M13 10V3L4 14H11V21L20 10H13Z" />
+                </svg>
+                <span class="brand">openFlash</span>
+            </div>
+            <div class="nav-links">
+                <button id="saveSetBtn" class="btn-save">Save Set</button>
+            </div>
+        </nav>
+
+        <main>
+            <section class="view-section">
+                <div class="create-header">
+                    <div class="header-inputs">
+                        <input type="text" id="setTitle" placeholder="Enter a title, like 'Biology 101'" class="main-input title-input">
+                        <textarea id="setDescription" placeholder="Add a description (optional)" class="main-input desc-input"></textarea>
+                    </div>
+                </div>
+
+                <div class="mode-tabs">
+                    <button class="tab-btn active" data-tab="manual">Manual Entry</button>
+                    <button class="tab-btn" data-tab="import">Import File</button>
+                </div>
+
+                <!-- Manual Entry Section -->
+                <div id="manualSection" class="tab-content active">
+                    <div id="cardRows" class="card-rows">
+                        <!-- Card row template -->
+                        <div class="card-row">
+                            <span class="row-number">1</span>
+                            <div class="row-inputs">
+                                <div class="input-group">
+                                    <input type="text" placeholder="Term" class="card-input term-input">
+                                    <label>TERM</label>
+                                </div>
+                                <div class="input-group">
+                                    <input type="text" placeholder="Definition" class="card-input def-input">
+                                    <label>DEFINITION</label>
+                                </div>
+                            </div>
+                            <div class="row-actions">
+                                <div class="image-upload-wrapper">
+                                    <button class="image-btn" title="Add Image">
+                                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                    </button>
+                                    <input type="file" class="row-image-input" hidden accept="image/*">
+                                    <div class="image-preview hidden">
+                                        <img src="" alt="Preview">
+                                        <button class="remove-image">×</button>
+                                    </div>
+                                </div>
+                                <button class="delete-row-btn" title="Delete Row">×</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="addRowBtn" class="add-row-btn">+ Add Card</button>
+                </div>
+
+                <!-- Import Section -->
+                <div id="importSection" class="tab-content">
+                    <div class="import-container">
+                        <div class="drop-zone" id="dropZone">
+                            <svg viewBox="0 0 24 24" class="import-icon">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                            </svg>
+                            <h3>Upload your flashcards</h3>
+                            <p>Drag & drop or click to upload .csv, .txt, or .json</p>
+                            <input type="file" id="fileInput" hidden accept=".csv,.txt,.json">
+                        </div>
+                        
+                        <div class="import-instructions">
+                            <h4>Accepted Formats</h4>
+                            <div class="format-grid">
+                                <div class="format-item">
+                                    <strong>CSV / TXT</strong>
+                                    <p>term, definition (one per line)</p>
+                                </div>
+                                <div class="format-item">
+                                    <strong>JSON</strong>
+                                    <p>[{"term": "...", "definition": "...", "image": "url"}]</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="scripts/db.js"></script>
+    <script src="create.js"></script>
+</body>
+
+</html>
