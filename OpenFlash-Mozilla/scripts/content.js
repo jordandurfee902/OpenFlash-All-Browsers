@@ -175,14 +175,15 @@ async function extractQuizletData() {
         const spans = div.querySelectorAll('span.TermText');
         const img = div.querySelector('img');
         
-        if (spans.length >= 2) {
+        const imgSrc = img ? (img.src || img.dataset.src) : null;
+        
+        if (spans.length >= 1 && (spans.length >= 2 || imgSrc)) {
             const card = {
                 id: Date.now() + Math.random() + i,
                 term: spans[0].innerText.trim(),
-                definition: spans[1].innerText.trim()
+                definition: spans.length >= 2 ? spans[1].innerText.trim() : ""
             };
             
-            const imgSrc = img ? (img.src || img.dataset.src) : null;
             if (imgSrc) {
                 console.log(`openFlash: [Card ${i+1}] Found image in DOM:`, imgSrc);
                 // Store URL to be fetched by background

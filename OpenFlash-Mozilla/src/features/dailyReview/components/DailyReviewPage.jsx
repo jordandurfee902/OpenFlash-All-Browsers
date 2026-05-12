@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDailyReview } from '../../../hooks/useDailyReview';
 import DailyReviewEngine from './DailyReviewEngine';
+import StatusModal from '../../../components/ui/StatusModal';
 import { Clock, Zap, Calendar, ArrowRight, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -16,6 +17,15 @@ const DailyReviewPage = () => {
     loading, 
     allSets 
   } = useDailyReview();
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+
+  const handleGenerate = () => {
+    if (!allSets || allSets.length === 0) {
+      setIsErrorOpen(true);
+      return;
+    }
+    generateNewSession();
+  };
 
   if (loading) {
     return (
@@ -45,7 +55,7 @@ const DailyReviewPage = () => {
           You've completed your daily review of {dailyState.cards.length} cards. Great job keeping your streak alive!
         </p>
         <button 
-          onClick={generateNewSession}
+          onClick={handleGenerate}
           className="px-8 py-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white rounded-2xl font-black text-sm hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-all border border-neutral-200 dark:border-neutral-700"
         >
           Generate Extra Session
@@ -85,7 +95,7 @@ const DailyReviewPage = () => {
           </div>
 
           <button 
-            onClick={generateNewSession}
+            onClick={handleGenerate}
             className="group w-full py-5 bg-yellow-400 text-neutral-900 rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-yellow-300 shadow-xl shadow-yellow-400/20 transition-all"
           >
             Start Daily Review
@@ -99,7 +109,7 @@ const DailyReviewPage = () => {
       <DailyReviewEngine 
         cards={dailyState.cards}
         onProgress={updateProgress}
-        onGenerate={generateNewSession}
+        onGenerate={handleGenerate}
         allSets={allSets}
         settings={settings}
         saveSettings={saveSettings}
@@ -112,12 +122,20 @@ const DailyReviewPage = () => {
       <DailyReviewDashboard 
         settings={settings}
         saveSettings={saveSettings}
-        onGenerate={generateNewSession}
+        onGenerate={handleGenerate}
         allSets={allSets}
       />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {content}
       </main>
+
+      <StatusModal 
+        isOpen={isErrorOpen}
+        onClose={() => setIsErrorOpen(false)}
+        type="error"
+        title="No Sets Found"
+        message="You need at least one flashcard set in your library to start a Daily Review. Create or import a set first!"
+      />
     </div>
   );
 };

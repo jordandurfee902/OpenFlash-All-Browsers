@@ -80,7 +80,7 @@ const Flashcard = ({ card, isFlipped, onFlip, status, swapActive = false }) => {
           >
             <div className="flex flex-col items-center justify-center gap-6 md:gap-8 w-full h-full overflow-hidden">
               {imageUrl && (
-                <div className="w-full max-h-[50%] flex items-center justify-center flex-shrink-0">
+                <div className={`w-full ${card.definition?.trim() ? 'max-h-[50%]' : 'max-h-full flex-1'} flex items-center justify-center flex-shrink-0 transition-all duration-300`}>
                   <img 
                     src={imageUrl} 
                     alt="Card illustration" 
@@ -88,11 +88,13 @@ const Flashcard = ({ card, isFlipped, onFlip, status, swapActive = false }) => {
                   />
                 </div>
               )}
-              <div className="w-full flex-1 flex items-center justify-center overflow-hidden">
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-neutral-700 dark:text-neutral-300 leading-relaxed break-words max-w-full max-h-full overflow-y-auto scrollbar-hide text-center py-2">
-                  {card.definition || "No definition provided."}
-                </p>
-              </div>
+              {card.definition?.trim() && (
+                <div className="w-full flex-1 flex items-center justify-center overflow-hidden">
+                  <p className="text-xl md:text-2xl lg:text-3xl font-bold text-neutral-700 dark:text-neutral-300 leading-relaxed break-words max-w-full max-h-full overflow-y-auto scrollbar-hide text-center py-2">
+                    {card.definition}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
