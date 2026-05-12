@@ -17,7 +17,12 @@
     "https://knowt-user-attachments.s3.amazonaws.com/*",
     "https://www.google.com/recaptcha/*",
     "https://www.gstatic.com/recaptcha/*",
-    "https://firebaseappcheck.googleapis.com/*"
+    "https://firebaseappcheck.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "https://firestore.googleapis.com/*",
+    "https://*.firebasestorage.app/*",
+    "https://firebasestorage.googleapis.com/*"
   ],
   "oauth2": {
     "client_id": "637353478320-pla6m2kn0lkuqgogmm19eu2dut5q7j80.apps.googleusercontent.com",

@@ -20,19 +20,23 @@ const app = initializeApp(firebaseConfig);
 // Initialize App Check
 let appCheckProvider;
 
-if (import.meta.env.DEV) {
-    // In development, we use the debug token. 
-    // Setting this global variable tells Firebase to use the debug provider.
-    self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+// Check if we are running in a browser extension
+const isExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id;
+
+if (import.meta.env.DEV || isExtension) {
+    // In extension environment (dev or prod), we use a CustomProvider to avoid CSP violations
+    // from ReCaptchaV3Provider attempting to load remote scripts.
     
-    // We use a dummy CustomProvider to prevent the ReCaptchaV3Provider 
-    // from attempting to load external scripts (which violates CSP).
+    // Enable Debug Token for development
+    if (import.meta.env.DEV) {
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    }
+    
     appCheckProvider = new CustomProvider({
-        getToken: () => Promise.reject("Using Debug Token instead of Custom Provider")
+        getToken: () => Promise.reject("Using Debug Token or skipped in extension")
     });
 } else {
-    // In production, ReCaptchaV3 is used (Note: MV3 extensions may require 
-    // an offscreen document or custom provider for this to work in production).
+    // Web production
     appCheckProvider = new ReCaptchaV3Provider('6LdQXOEsAAAAAH5ssjz6-sjyOd5AIKsuIy2PSmDA');
 }
 
