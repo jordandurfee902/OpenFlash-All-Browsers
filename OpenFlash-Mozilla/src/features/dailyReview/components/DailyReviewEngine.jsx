@@ -5,6 +5,8 @@ import SortControls from '../../sortMode/components/SortControls';
 import SortSettingsModal from '../../sortMode/components/SortSettingsModal';
 import Flashcard from '../../study/components/Flashcard';
 import CompletionModal from '../../../components/ui/CompletionModal';
+import TypeInputArea from '../../typeMode/components/TypeInputArea';
+import { isAnswerCorrect } from '../../typeMode/utils/stringSimilarity';
 import { useNavigate } from 'react-router-dom';
 import { evaluateCard, distributeCards, drawNextCard } from '../../../utils/leitner';
 
@@ -19,6 +21,19 @@ const DEFAULT_SETTINGS = {
   masteryThreshold: 3
 };
 
+const DEFAULT_TYPE_SETTINGS = {
+  keybinds: {
+    submit: 'Enter',
+    override: 'Backspace'
+  },
+  grading: {
+    uppercase: false,
+    punctuation: false,
+    special: false,
+    difficulty: 'medium'
+  }
+};
+
 const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: dailySettings, saveSettings }) => {
   const [boxes, setBoxes] = useState([]);
   const [masteredCount, setMasteredCount] = useState(0);
@@ -26,9 +41,12 @@ const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: d
   const [isFlipped, setIsFlipped] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [typeSettings, setTypeSettings] = useState(DEFAULT_TYPE_SETTINGS);
   const [swapActive, setSwapActive] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [evalStatus, setEvalStatus] = useState(null);
+  const [evalState, setEvalState] = useState('typing'); // 'typing' | 'evaluated'
+  const [inputValue, setInputValue] = useState('');
   const [isCompletionOpen, setIsCompletionOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,9 +54,10 @@ const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: d
   useEffect(() => {
     const init = async () => {
       const result = await new Promise(resolve => {
-        chrome.storage.local.get(['sortSettings'], resolve);
+        chrome.storage.local.get(['sortSettings', 'typeSettings'], resolve);
       });
       setSettings(result.sortSettings ? { ...DEFAULT_SETTINGS, ...result.sortSettings } : DEFAULT_SETTINGS);
+      setTypeSettings(result.typeSettings ? { ...DEFAULT_TYPE_SETTINGS, ...result.typeSettings } : DEFAULT_TYPE_SETTINGS);
 
       const threshold = result.sortSettings?.masteryThreshold || DEFAULT_SETTINGS.masteryThreshold;
       
@@ -116,48 +135,74 @@ const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: d
     }
   }, [settings.masteryThreshold]);
 
+  const handleTypeSubmit = useCallback(() => {
+    if (!currentCard || evalState !== 'typing') return;
+    
+    const targetText = swapActive ? currentCard.term : currentCard.definition;
+    const isCorrect = isAnswerCorrect(inputValue, targetText, typeSettings);
+    
+    setEvalStatus(isCorrect ? 'correct' : 'incorrect');
+    setEvalState('evaluated');
+    setIsFlipped(true);
+  }, [currentCard, evalState, inputValue, swapActive, typeSettings]);
+
   const handleEvaluation = useCallback((result) => {
     if (!currentCard) return;
 
-    setEvalStatus(result);
-    setTimeout(() => setEvalStatus(null), 300);
+    const isOverride = result === 'override';
+    const finalResult = isOverride ? 'correct' : result;
 
-    const evaluatedCard = evaluateCard(currentCard, result, settings.masteryThreshold);
-    
-    // Update local boxes
-    const newBoxes = boxes.map(b => [...b]); 
-    const oldScore = currentCard.mastery || 0;
-    const boxIndex = Math.min(oldScore, settings.masteryThreshold - 1);
-    if (newBoxes[boxIndex]) {
-      newBoxes[boxIndex] = newBoxes[boxIndex].filter(c => c.id === currentCard.id && c.parentSetId === currentCard.parentSetId ? false : true);
-    }
+    setEvalStatus(finalResult);
 
-    let newMasteredCount = masteredCount;
-    let isMastered = false;
+    const proceed = () => {
+      const evaluatedCard = evaluateCard(currentCard, finalResult, settings.masteryThreshold);
+      
+      // Update local boxes
+      const newBoxes = boxes.map(b => [...b]); 
+      const oldScore = currentCard.mastery || 0;
+      const boxIndex = Math.min(oldScore, settings.masteryThreshold - 1);
+      if (newBoxes[boxIndex]) {
+        newBoxes[boxIndex] = newBoxes[boxIndex].filter(c => c.id === currentCard.id && c.parentSetId === currentCard.parentSetId ? false : true);
+      }
 
-    if (evaluatedCard.mastery >= settings.masteryThreshold) {
-      showToast('Mastered!', 'success');
-      newMasteredCount++;
-      isMastered = true;
+      let newMasteredCount = masteredCount;
+      let isMastered = false;
+
+      if (evaluatedCard.mastery >= settings.masteryThreshold) {
+        showToast('Mastered!', 'success');
+        newMasteredCount++;
+        isMastered = true;
+      } else {
+        const newBoxIndex = Math.min(evaluatedCard.mastery, settings.masteryThreshold - 1);
+        newBoxes[newBoxIndex].push(evaluatedCard);
+      }
+
+      setBoxes(newBoxes);
+      setMasteredCount(newMasteredCount);
+      updateGlobalMastery(currentCard, finalResult);
+      onProgress(currentCard.id, isMastered);
+
+      if (newMasteredCount >= cards.length) {
+        setIsCompletionOpen(true);
+        setCurrentCard(null);
+      } else {
+        const nextCard = drawNextCard(newBoxes, settings.aggression, currentCard.id);
+        setCurrentCard(nextCard);
+      }
+
+      setIsFlipped(swapActive);
+      setEvalState('typing');
+      setInputValue('');
+      setEvalStatus(null);
+    };
+
+    if (isOverride) {
+      showToast('Overridden', 'success');
+      setTimeout(proceed, 600);
     } else {
-      const newBoxIndex = Math.min(evaluatedCard.mastery, settings.masteryThreshold - 1);
-      newBoxes[newBoxIndex].push(evaluatedCard);
+      setTimeout(() => setEvalStatus(null), 300);
+      proceed();
     }
-
-    setBoxes(newBoxes);
-    setMasteredCount(newMasteredCount);
-    updateGlobalMastery(currentCard, result);
-    onProgress(currentCard.id, isMastered);
-
-    if (newMasteredCount >= cards.length) {
-      setIsCompletionOpen(true);
-      setCurrentCard(null);
-    } else {
-      const nextCard = drawNextCard(newBoxes, settings.aggression, currentCard.id);
-      setCurrentCard(nextCard);
-    }
-
-    setIsFlipped(swapActive);
   }, [boxes, currentCard, settings, swapActive, masteredCount, cards.length, updateGlobalMastery, onProgress]);
 
   const handleFlip = useCallback(() => {
@@ -169,25 +214,45 @@ const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: d
     const handleKeyDown = (e) => {
       if (isSettingsOpen || isCompletionOpen || !currentCard) return;
 
-      const binds = settings.keybinds;
-      if (e.code === binds.correct) {
-        e.preventDefault();
-        handleEvaluation('correct');
-      } else if (e.code === binds.incorrect) {
-        e.preventDefault();
-        handleEvaluation('incorrect');
-      } else if (e.code === binds.somewhat) {
-        e.preventDefault();
-        handleEvaluation('somewhat');
-      } else if (e.code === binds.flip) {
-        e.preventDefault();
-        handleFlip();
+      const isSort = dailySettings.reviewMode === 'sort';
+
+      if (isSort) {
+        const binds = settings.keybinds;
+        if (e.code === binds.correct) {
+          e.preventDefault();
+          handleEvaluation('correct');
+        } else if (e.code === binds.incorrect) {
+          e.preventDefault();
+          handleEvaluation('incorrect');
+        } else if (e.code === binds.somewhat) {
+          e.preventDefault();
+          handleEvaluation('somewhat');
+        } else if (e.code === binds.flip) {
+          e.preventDefault();
+          handleFlip();
+        }
+      } else {
+        // Type Mode Bindings
+        const typeBinds = typeSettings.keybinds;
+        if (e.code === typeBinds.submit || e.key === typeBinds.submit) {
+          e.preventDefault();
+          if (evalState === 'typing') {
+            handleTypeSubmit();
+          } else {
+            handleEvaluation(evalStatus);
+          }
+        } else if (e.code === typeBinds.override || e.key === typeBinds.override) {
+          if (evalState === 'evaluated' && evalStatus === 'incorrect') {
+            e.preventDefault();
+            handleEvaluation('override');
+          }
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleEvaluation, handleFlip, settings, isSettingsOpen, currentCard, isCompletionOpen]);
+  }, [handleEvaluation, handleFlip, handleTypeSubmit, settings, typeSettings, isSettingsOpen, currentCard, isCompletionOpen, evalState, evalStatus, dailySettings.reviewMode]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full mx-auto overflow-y-auto scrollbar-hide">
@@ -208,30 +273,55 @@ const DailyReviewEngine = ({ cards, onProgress, onGenerate, allSets, settings: d
           )}
         </AnimatePresence>
 
-        <div className={`w-full flex justify-center transition-all duration-300 transform ${evalStatus === 'correct' ? 'translate-x-4 opacity-50' :
+        <div className={`w-full flex justify-center transition-all duration-300 transform relative ${
+          dailySettings.reviewMode === 'sort' ? (
+            evalStatus === 'correct' ? 'translate-x-4 opacity-50' :
             evalStatus === 'incorrect' ? '-translate-x-4 opacity-50' :
-              evalStatus === 'somewhat' ? 'translate-y-4 opacity-50' : ''
-          }`}>
+            evalStatus === 'somewhat' ? 'translate-y-4 opacity-50' : ''
+          ) : (
+            evalStatus === 'correct' ? 'scale-105' :
+            evalStatus === 'incorrect' ? 'scale-95' : ''
+          )
+        }`}>
           {currentCard && (
-            <div className="w-full max-w-xl lg:max-w-2xl xl:max-w-3xl">
+            <div className="w-full max-w-xl lg:max-w-2xl xl:max-w-3xl relative">
               <Flashcard
                 card={currentCard}
                 isFlipped={isFlipped}
                 onFlip={handleFlip}
                 status={evalStatus}
+                swapActive={swapActive}
               />
+              
+              {dailySettings.reviewMode === 'type' && evalState === 'evaluated' && (
+                <div className="absolute -bottom-8 left-0 right-0 text-center font-bold text-yellow-600 dark:text-yellow-400 opacity-80 animate-pulse text-[10px] uppercase tracking-widest">
+                  {evalStatus === 'incorrect' 
+                    ? `Press ${typeSettings.keybinds.submit} to continue or ${typeSettings.keybinds.override} to override`
+                    : `Press ${typeSettings.keybinds.submit} to continue`}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        <SortControls
-          onSettings={() => setIsSettingsOpen(true)}
-          onIncorrect={() => handleEvaluation('incorrect')}
-          onSomewhat={() => handleEvaluation('somewhat')}
-          onCorrect={() => handleEvaluation('correct')}
-          onSwap={() => { setSwapActive(!swapActive); setIsFlipped(!swapActive); }}
-          swapActive={swapActive}
-        />
+        {dailySettings.reviewMode === 'sort' ? (
+          <SortControls
+            onSettings={() => setIsSettingsOpen(true)}
+            onIncorrect={() => handleEvaluation('incorrect')}
+            onSomewhat={() => handleEvaluation('somewhat')}
+            onCorrect={() => handleEvaluation('correct')}
+            onSwap={() => { setSwapActive(!swapActive); setIsFlipped(!swapActive); }}
+            swapActive={swapActive}
+          />
+        ) : (
+          <TypeInputArea 
+            value={inputValue}
+            onChange={setInputValue}
+            disabled={evalState === 'evaluated'}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            placeholder={swapActive ? "Type the term..." : "Type the definition..."}
+          />
+        )}
       </div>
 
       <SortSettingsModal

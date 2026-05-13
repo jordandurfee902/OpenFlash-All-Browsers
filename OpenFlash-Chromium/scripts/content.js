@@ -18,18 +18,32 @@ function checkForFlashcards() {
             initSmartBanner();
             return true;
         }
+    } else if (window.location.hostname.includes('brainscape.com')) {
+        const brainscapeElements = document.querySelectorAll('.flashcard-contents, .card-face, .card-contents');
+        if (brainscapeElements.length > 0) {
+            initSmartBanner();
+            return true;
+        }
     }
     return false;
 }
 
 // Watch for dynamic content changes
 const observer = new MutationObserver(() => {
-    if (checkForFlashcards()) {
-        observer.disconnect(); // Stop watching once found
-    }
+    checkForFlashcards();
 });
 
 observer.observe(document.body, { childList: true, subtree: true });
+
+// Watch for URL changes (SPA navigation)
+let lastUrl = window.location.href;
+setInterval(() => {
+    if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        console.log("openFlash: URL changed, re-checking for flashcards...");
+        checkForFlashcards();
+    }
+}, 1000);
 
 // Fallback: Check every 2 seconds for 10 seconds
 let checks = 0;
@@ -41,23 +55,37 @@ const interval = setInterval(() => {
 }, 2000);
 
 async function initSmartBanner() {
-    // Prevent multiple banners
-    if (document.querySelector('.openflash-banner')) return;
+    const bannerId = `openflash-banner-${window.location.pathname.replace(/\//g, '-')}`;
+    if (document.getElementById(bannerId)) return;
+    if (document.querySelector('.openflash-banner')) return; // General check
 
-    const title = document.querySelector('h1')?.innerText || "this set";
+    const isKnowt = window.location.hostname.includes('knowt.com');
+    const isBrainscape = window.location.hostname.includes('brainscape.com');
     
-    const storage = await chrome.storage.local.get(['flashcardSets', 'dismissedBanners']);
+    let title;
+    if (isBrainscape) {
+        const deckName = document.querySelector('.deck-name')?.innerText;
+        title = deckName || document.querySelector('h1')?.innerText || "Brainscape Set";
+    } else {
+        title = document.querySelector('h1')?.innerText || "this set";
+    }
+    
+    const currentUrl = window.location.href;
+    const storage = await chrome.storage.local.get(['flashcardSets', 'dismissedUrls']);
     const sets = storage.flashcardSets || [];
-    const dismissed = storage.dismissedBanners || [];
+    const dismissed = storage.dismissedUrls || [];
     
-    const isAlreadyAdded = sets.some(s => s.title === title);
-    if (isAlreadyAdded || dismissed.includes(title)) return;
+    // For already added check, we use title but for Brainscape we include URL components
+    const isAlreadyAdded = sets.some(s => s.title === title || (isBrainscape && s.id.includes(window.location.pathname.split('/')[4])));
+    
+    if (isAlreadyAdded || dismissed.includes(currentUrl)) return;
 
-    createBanner(title);
+    createBanner(title, bannerId);
 }
 
-function createBanner(setName) {
+function createBanner(setName, bannerId) {
     const banner = document.createElement('div');
+    banner.id = bannerId;
     banner.className = 'openflash-banner';
     banner.innerHTML = `
         <div class="openflash-banner-left">
@@ -78,10 +106,13 @@ function createBanner(setName) {
     document.getElementById('openflash-dismiss').onclick = () => {
         banner.classList.remove('show');
         setTimeout(() => banner.remove(), 500);
-        chrome.storage.local.get(['dismissedBanners'], (result) => {
-            const list = result.dismissedBanners || [];
-            list.push(setName);
-            chrome.storage.local.set({ dismissedBanners: list });
+        const currentUrl = window.location.href;
+        chrome.storage.local.get(['dismissedUrls'], (result) => {
+            const list = result.dismissedUrls || [];
+            if (!list.includes(currentUrl)) {
+                list.push(currentUrl);
+                chrome.storage.local.set({ dismissedUrls: list });
+            }
         });
     };
 
@@ -92,7 +123,16 @@ function createBanner(setName) {
 
         try {
             const isKnowt = window.location.hostname.includes('knowt.com');
-            const result = isKnowt ? await extractKnowtData() : await extractQuizletData();
+            const isBrainscape = window.location.hostname.includes('brainscape.com');
+            
+            let result;
+            if (isKnowt) {
+                result = await extractKnowtData();
+            } else if (isBrainscape) {
+                result = await extractBrainscapeData();
+            } else {
+                result = await extractQuizletData();
+            }
             if (result.success) {
                 await saveSetToLibrary(result.newSet);
                 
@@ -266,3 +306,81 @@ async function extractKnowtData() {
 
 // Start detection immediately
 checkForFlashcards();
+
+async function extractBrainscapeData() {
+    console.log("openFlash: Starting Brainscape extraction...");
+    
+    let title = document.querySelector('h1')?.innerText;
+    
+    let contentDivs = document.querySelectorAll('.flashcard-contents');
+    if (contentDivs.length === 0) {
+        contentDivs = document.querySelectorAll('.card-face');
+    }
+    if (contentDivs.length === 0) {
+        contentDivs = document.querySelectorAll('.card-contents');
+        if (contentDivs.length > 0) {
+            console.log(`openFlash: Using .card-contents for extraction.`);
+            const deckName = document.querySelector('.deck-name')?.innerText;
+            if (deckName) title = deckName;
+        }
+    }
+
+    if (!title) title = "Untitled Brainscape Set";
+    
+    console.log(`openFlash: Using title: ${title}`);
+    console.log(`openFlash: Found ${contentDivs.length} content containers.`);
+    const cards = [];
+
+    // Indices 0, 2, 4... are terms; 1, 3, 5... are definitions
+    for (let i = 0; i < contentDivs.length; i += 2) {
+        const termDiv = contentDivs[i];
+        const defDiv = contentDivs[i + 1];
+
+        if (termDiv && defDiv) {
+            const getDivContent = (div) => {
+                const textElements = div.querySelectorAll('p, li');
+                // Concatenate all text elements with newlines
+                const text = Array.from(textElements).map(el => el.innerText.trim()).filter(t => t).join('\n');
+                
+                // Image check
+                const img = div.querySelector('img');
+                const imgSrc = img ? (img.src || img.dataset.src || img.getAttribute('data-src')) : null;
+                return { text, imgSrc };
+            };
+
+            const termData = getDivContent(termDiv);
+            const defData = getDivContent(defDiv);
+
+            // Valid card if at least one of term/definition has text or image
+            if (termData.text || termData.imgSrc || defData.text || defData.imgSrc) {
+                const card = {
+                    id: Date.now() + Math.random() + i,
+                    term: termData.text || (termData.imgSrc ? "[Image]" : "Untitled"),
+                    definition: defData.text || (defData.imgSrc ? "[Image]" : "Untitled")
+                };
+
+                // Store image URL from definition preferred, then term
+                if (defData.imgSrc) {
+                    card.tempImgUrl = defData.imgSrc;
+                } else if (termData.imgSrc) {
+                    card.tempImgUrl = termData.imgSrc;
+                }
+
+                cards.push(card);
+            }
+        }
+    }
+
+    console.log(`openFlash: Brainscape extraction complete. Found ${cards.length} cards.`);
+    if (cards.length === 0) throw new Error("No cards found on Brainscape.");
+
+    const newSet = {
+        id: "brainscape-" + Date.now(),
+        title: title,
+        description: `Extracted from Brainscape on ${new Date().toLocaleDateString()}`,
+        cards: cards,
+        tags: ["Brainscape"]
+    };
+
+    return { success: true, count: cards.length, newSet: newSet };
+}

@@ -164,6 +164,7 @@ const TypeModeEngine = ({ set }) => {
       showToast('Overridden', 'success');
       setTimeout(() => proceed(true), 600);
     } else {
+      setTimeout(() => setEvalStatus(null), 300);
       proceed(false);
     }
   }, [currentCard, evalStatus, boxes, masteredCount, settings, set.cards.length, set.id]);

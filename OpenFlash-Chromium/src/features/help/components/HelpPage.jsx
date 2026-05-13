@@ -33,7 +33,15 @@ const FAQ_DATA = [
   },
   {
     question: "How do I import sets from Quizlet?",
-    answer: "When you visit a Quizlet set page, the OpenFlash banner will appear at the top. Click 'Extract Flashcards' to instantly save the set to your local library, including any images."
+    answer: "When you visit a Quizlet set page, the OpenFlash banner will appear at the top. Click 'Add to Library' to instantly save the set to your local library, including any images."
+  },
+  {
+    question: "How do I import sets from Knowt?",
+    answer: "Visit any Knowt set page and the OpenFlash banner will appear at the top. Click 'Add to Library' to import the cards and images."
+  },
+  {
+    question: "How do I import sets from Brainscape?",
+    answer: "To extract cards from Brainscape, you must be logged into your account and navigate to the 'Preview' section of a deck (where you can scroll through all the cards). The OpenFlash banner will appear automatically once you are in the preview view."
   }
 ];
 

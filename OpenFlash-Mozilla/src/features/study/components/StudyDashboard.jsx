@@ -72,13 +72,13 @@ const StudyDashboard = ({ studySet, activeMode, setActiveMode, onUpdate, onDelet
               className="flex flex-col h-full"
             >
               {/* Set Header */}
-              <div className="p-6 lg:p-8 pb-4">
+              <div className="p-4 lg:p-6 pb-2">
                 <h1 className="text-xl lg:text-2xl font-black text-neutral-900 dark:text-white mb-2 leading-tight">{studySet.title}</h1>
                 <p className="text-neutral-500 text-xs lg:text-sm leading-relaxed">{studySet.description || "No description provided."}</p>
               </div>
 
               {/* Management */}
-              <div className="p-6 lg:p-8 pb-4 space-y-6">
+              <div className="p-4 lg:p-6 pb-2 space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Management</h3>
                 <div className="grid grid-cols-2 gap-2 lg:gap-3">
                   <button 
@@ -108,11 +108,41 @@ const StudyDashboard = ({ studySet, activeMode, setActiveMode, onUpdate, onDelet
                 </div>
               </div>
 
+              {/* Modes */}
+              <div className="p-4 lg:p-6 pb-2">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Study Modes</h3>
+                <div className="space-y-2">
+                  {modes.map((mode) => {
+                    const IconComp = mode.icon;
+                    return (
+                      <button
+                        key={mode.id}
+                        onClick={() => setActiveMode(mode.id)}
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
+                        className={`w-full flex items-center gap-3 lg:gap-4 p-3 lg:p-4 rounded-2xl transition-all duration-200 text-left outline-none focus:outline-none border ${
+                          activeMode === mode.id 
+                            ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 shadow-xl opacity-100 grayscale-0' 
+                            : 'bg-transparent border-transparent grayscale opacity-60 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 hover:grayscale-0 hover:opacity-100'
+                        }`}
+                      >
+                        <div className={`p-2 lg:p-2.5 rounded-xl ${activeMode === mode.id ? 'bg-yellow-400 text-neutral-900' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'}`}>
+                          <IconComp className="w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                        </div>
+                        <div>
+                          <div className={`text-xs lg:text-sm font-bold ${activeMode === mode.id ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'}`}>{mode.label}</div>
+                          <div className="text-[9px] lg:text-[10px] text-neutral-500 font-medium">{mode.desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Appearance */}
-              <div className="p-6 lg:p-8 pb-4 space-y-6">
+              <div className="p-4 lg:p-6 pb-2 space-y-4">
                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Appearance</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div className="grid grid-cols-4 gap-2 lg:gap-3">
                     {iconOptions.map((iconName) => {
                       const IconComp = Icons[iconName] || Icons.HelpCircle;
@@ -149,7 +179,7 @@ const StudyDashboard = ({ studySet, activeMode, setActiveMode, onUpdate, onDelet
               </div>
 
               {/* Tags */}
-              <div className="p-6 lg:p-8 pb-4 space-y-6">
+              <div className="p-4 lg:p-6 pb-2 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600">Tags</h3>
                   <button 
@@ -197,36 +227,6 @@ const StudyDashboard = ({ studySet, activeMode, setActiveMode, onUpdate, onDelet
                   {(!studySet.tags || studySet.tags.length === 0) && !isAddingTag && (
                     <span className="text-[10px] text-neutral-600 italic">No tags added</span>
                   )}
-                </div>
-              </div>
-
-              {/* Modes */}
-              <div className="p-6 lg:p-8 mt-auto">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-6">Study Modes</h3>
-                <div className="space-y-2">
-                  {modes.map((mode) => {
-                    const IconComp = mode.icon;
-                    return (
-                      <button
-                        key={mode.id}
-                        onClick={() => setActiveMode(mode.id)}
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                        className={`w-full flex items-center gap-3 lg:gap-4 p-3 lg:p-4 rounded-2xl transition-all duration-200 text-left outline-none focus:outline-none border ${
-                          activeMode === mode.id 
-                            ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-700 shadow-xl opacity-100 grayscale-0' 
-                            : 'bg-transparent border-transparent grayscale opacity-60 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 hover:grayscale-0 hover:opacity-100'
-                        }`}
-                      >
-                        <div className={`p-2 lg:p-2.5 rounded-xl ${activeMode === mode.id ? 'bg-yellow-400 text-neutral-900' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'}`}>
-                          <IconComp className="w-4 h-4 lg:w-[18px] lg:h-[18px]" />
-                        </div>
-                        <div>
-                          <div className={`text-xs lg:text-sm font-bold ${activeMode === mode.id ? 'text-neutral-900 dark:text-white' : 'text-neutral-400'}`}>{mode.label}</div>
-                          <div className="text-[9px] lg:text-[10px] text-neutral-500 font-medium">{mode.desc}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
             </motion.div>

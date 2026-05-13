@@ -5,7 +5,8 @@ export const useDailyReview = () => {
   const [settings, setSettings] = useState({
     selectedSetIds: [],
     dailyCount: 20,
-    aggression: 'normal'
+    aggression: 'normal',
+    reviewMode: 'sort'
   });
   const [dailyState, setDailyState] = useState({
     lastGenerated: null,
@@ -28,7 +29,8 @@ export const useDailyReview = () => {
       const savedSettings = result.dailyReviewSettings || {
         selectedSetIds: sets.map(s => s.id), // Default to all sets
         dailyCount: 20,
-        aggression: 'normal'
+        aggression: 'normal',
+        reviewMode: 'sort'
       };
       setSettings(savedSettings);
 

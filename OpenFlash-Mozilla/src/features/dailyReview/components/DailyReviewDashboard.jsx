@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, RotateCcw, List, Check, Clock, ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Settings, RotateCcw, List, Check, Clock, ChevronRight, PanelLeftClose, PanelLeftOpen, Brain, Keyboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ConfirmModal from '../../../components/ui/ConfirmModal';
 
@@ -69,21 +69,69 @@ const DailyReviewDashboard = ({ settings, saveSettings, onGenerate, allSets }) =
               {/* Configuration */}
               <div className="p-6 lg:p-8 space-y-8 flex-1">
                 <div className="space-y-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600">Review Mode</h3>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'sort', label: 'Sort Mode', desc: 'Manual sorting', icon: Brain },
+                      { id: 'type', label: 'Type Mode', desc: 'Recall typing', icon: Keyboard }
+                    ].map((mode) => {
+                      const IconComp = mode.icon;
+                      const isActive = settings.reviewMode === mode.id;
+                      return (
+                        <button
+                          key={mode.id}
+                          onClick={() => saveSettings({ ...settings, reviewMode: mode.id })}
+                          className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 text-left border ${
+                            isActive 
+                              ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-md opacity-100' 
+                              : 'bg-transparent border-transparent grayscale opacity-60 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 hover:grayscale-0 hover:opacity-100'
+                          }`}
+                        >
+                          <div className={`p-2 rounded-lg ${isActive ? 'bg-yellow-400 text-neutral-900' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'}`}>
+                            <IconComp size={16} />
+                          </div>
+                          <div>
+                            <div className={`text-[11px] font-bold ${isActive ? 'text-neutral-900 dark:text-white' : 'text-neutral-500'}`}>{mode.label}</div>
+                            <div className="text-[9px] text-neutral-400 font-medium">{mode.desc}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600">Daily Goal</h3>
                   <div className="p-4 bg-neutral-100 dark:bg-neutral-800/50 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-bold text-neutral-500">Cards per session</span>
-                      <span className="text-sm font-black text-neutral-900 dark:text-white">{settings.dailyCount}</span>
                     </div>
-                    <input 
-                      type="range"
-                      min="5"
-                      max="100"
-                      step="5"
-                      value={settings.dailyCount}
-                      onChange={(e) => saveSettings({ ...settings, dailyCount: parseInt(e.target.value) })}
-                      className="w-full accent-yellow-400"
-                    />
+                    <div className="relative group">
+                      <input 
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={settings.dailyCount}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) {
+                            saveSettings({ ...settings, dailyCount: val });
+                          } else if (e.target.value === '') {
+                            saveSettings({ ...settings, dailyCount: 0 });
+                          }
+                        }}
+                        onBlur={(e) => {
+                          let val = parseInt(e.target.value);
+                          if (isNaN(val) || val < 1) val = 5;
+                          if (val > 500) val = 500;
+                          saveSettings({ ...settings, dailyCount: val });
+                        }}
+                        className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2.5 text-sm font-black text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/50 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-neutral-400 uppercase tracking-tight pointer-events-none group-focus-within:text-yellow-500 transition-colors">
+                        Limit
+                      </div>
+                    </div>
                   </div>
                 </div>
 

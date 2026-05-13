@@ -14,6 +14,8 @@
     "https://*.knowt.com/*",
     "https://knowt.com/*",
     "https://knowt-user-attachments.s3.amazonaws.com/*",
+    "https://s3.amazonaws.com/*",
+    "https://*.brainscape.com/*",
     "https://www.google.com/recaptcha/*",
     "https://www.gstatic.com/recaptcha/*",
     "https://firebaseappcheck.googleapis.com/*"
@@ -41,7 +43,9 @@
         "*://*.quizlet.com/*",
         "*://quizlet.com/*",
         "*://*.knowt.com/*",
-        "*://knowt.com/*"
+        "*://knowt.com/*",
+        "*://*.brainscape.com/*",
+        "*://brainscape.com/*"
       ],
       "js": [
         "scripts/content.js"
