@@ -34,24 +34,33 @@ export function AuthProvider({ children }) {
         },
         async (redirectUrl) => {
           if (chrome.runtime.lastError || !redirectUrl) {
+            console.error("Auth: launchWebAuthFlow error:", chrome.runtime.lastError);
             reject(chrome.runtime.lastError || new Error('Authentication failed or was cancelled'));
             return;
           }
+
+          console.log("Auth: Redirect URL received:", redirectUrl);
 
           // Extract token from the redirect URL hash
           const urlParams = new URLSearchParams(new URL(redirectUrl).hash.substring(1));
           const token = urlParams.get('access_token');
 
+          console.log("Auth: Token found in hash:", token ? "Yes" : "No");
+
           if (!token) {
-            reject(new Error('No access token found in redirect URL'));
+            console.error("Auth: URL hash content:", new URL(redirectUrl).hash);
+            reject(new Error('No access token found in redirect URL.'));
             return;
           }
 
           try {
+            console.log("Auth: Attempting Firebase sign-in...");
             const credential = GoogleAuthProvider.credential(null, token);
             const result = await signInWithCredential(auth, credential);
+            console.log("Auth: Firebase sign-in successful!");
             resolve(result.user);
           } catch (error) {
+            console.error("Auth: Firebase sign-in error:", error);
             reject(error);
           }
         }
