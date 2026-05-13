@@ -16,7 +16,14 @@ export function AuthProvider({ children }) {
   const signInWithGoogle = () => {
     return new Promise((resolve, reject) => {
       const clientId = '637353478320-pla6m2kn0lkuqgogmm19eu2dut5q7j80.apps.googleusercontent.com';
-      const redirectUri = chrome.identity.getRedirectURL();
+      
+      // Standardize redirect URI for Google OAuth compatibility
+      // chrome.identity.getRedirectURL() can return weird TLDs in browsers like Ungoogled Chromium
+      const isFirefox = typeof browser !== 'undefined' || chrome.runtime.getURL('').startsWith('moz-extension://');
+      const redirectUri = isFirefox 
+        ? chrome.identity.getRedirectURL() 
+        : `https://${chrome.runtime.id}.chromiumapp.org/`;
+      
       const scopes = encodeURIComponent('https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile');
       const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}`;
 
